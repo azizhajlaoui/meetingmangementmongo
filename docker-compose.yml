@@ -1,0 +1,19 @@
+version: '3'
+
+services:
+  flask-app:
+    build: .
+    ports:
+      - "5000:5000"
+    depends_on:
+      - mongo
+    networks:
+      - my-network
+
+  mongo:
+    image: mongo
+    networks:
+      - my-network
+
+networks:
+  my-network:
