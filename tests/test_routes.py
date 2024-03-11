@@ -1,9 +1,9 @@
 # meetingmangementmongo/tests/test_routes.py
-from flask import Flask
+from flask import Flask,Blueprint
 from flask_pymongo import PyMongo
 from bson import ObjectId
 import pytest
-from ..routes import meeting_bp 
+
 # import sys
 # print(sys.path)
 
@@ -13,7 +13,8 @@ def app():
     app.config['TESTING'] = True
     app.config['MONGO_URI'] = 'mongodb://localhost:27017/test_db'  # Use a test database
     mongo = PyMongo(app)
-    app.register_blueprint(meeting_bp, url_prefix='/api/meetings')
+    # meeting_bp = Blueprint('meeting_bp', __name__)
+    # app.register_blueprint(meeting_bp, url_prefix='/api/meetings')
 
     yield app
 
@@ -36,7 +37,7 @@ def test_create_meeting(client):
 
 def test_get_meeting(client):
     # Implement test for getting a meeting
-    response = client.get('/api/meetings/test-meeting')
+    response = client.get('/api/meetings/3')
     assert response.status_code == 200  # Check if the meeting was retrieved successfully
     data = response.get_json()
     assert data["id_meet"] == "test-meeting"
