@@ -15,5 +15,16 @@ services:
     networks:
       - my-network
 
+  tests:
+    build:
+      context: .
+      dockerfile: dockerfile.test
+    container_name: meeting_tests
+    depends_on:
+      - mongo
+    networks:
+      - my-network
+
 networks:
   my-network:
+    driver: bridge

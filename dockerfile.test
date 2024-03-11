@@ -1,0 +1,17 @@
+# Dockerfile.test
+
+# Use the same base image as your main Dockerfile
+FROM python:3.8
+
+# Set the working directory
+WORKDIR /app
+
+# Copy only the necessary files for testing
+COPY requirements.txt .
+COPY tests/ tests/
+
+# Install dependencies
+RUN pip install -r requirements.txt
+
+# Run tests
+CMD ["pytest", "tests/"]
