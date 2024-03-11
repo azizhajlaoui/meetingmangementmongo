@@ -1,4 +1,4 @@
-from bson import ObjectId
+from bson import ObjectId,json_util
 from models import Meeting
 from flask import Blueprint, request, jsonify
 from common import mongo 
@@ -9,8 +9,8 @@ meeting_bp = Blueprint('meeting_bp', __name__)
 def create_meeting():
     try:
     # Use the mongo object to interact with the database
+        meetings_collection = mongo.db.meetings
         meeting = {
-            '_id':None,
             'mail': request.json['mail'],
             'color': request.json['color'],
             'title': request.json['title'],
@@ -19,7 +19,7 @@ def create_meeting():
             'id_meet': request.json['id_meet'],
             'description': request.json['description'],
         }
-        result = mongo.insert_one(meeting)
+        result = meetings_collection.insert_one(meeting)
 
         return jsonify({'message': 'Meeting created successfully'}), 201
 
@@ -33,23 +33,27 @@ def update(id):
         try:
             # Get data from the request
             meeting_data = request.get_json()
-            start_hour = meeting_data['start_hour']
-            end_hour = meeting_data['end_hour']
-            description = meeting_data['description']
-            mail = meeting_data['mail']
-            title = meeting_data['title']
-            color = meeting_data['color']
+            meetings_collection = mongo.db.meetings
+            # Extract data using correct syntax
+            mail = meeting_data.get('mail')
+            color = meeting_data.get('color')
+            title = meeting_data.get('title')
+            start_time = meeting_data.get('start_time')
+            end_time = meeting_data.get('end_time')
+            id_meet = meeting_data.get('id_meet')
+            description = meeting_data.get('description')
 
             # Update the meeting document in the MongoDB collection
-            result = mongo.db.update_one(
-                {'_id': ObjectId(id)},
+            result = meetings_collection.update_one(
+                {'id_meet': id_meet},  # Use id_meet as the identifier
                 {'$set': {
-                    'start_hour': start_hour,
-                    'end_hour': end_hour,
+                    'start_hour': start_time,
+                    'end_hour': end_time,
                     'description': description,
                     'mail': mail,
                     'title': title,
-                    'color': color
+                    'color': color,
+                    'id_meet': id_meet
                 }}
             )
 
@@ -60,17 +64,17 @@ def update(id):
 
         except Exception as e:
             return jsonify({"error": str(e)}), 400
-        
  
-@meeting_bp.route('/<string:id>', methods=['GET'])
-def get_meeting(id):
+@meeting_bp.route('/<string:id_meet>', methods=['GET'])
+def get_meeting(id_meet):
     try:
-        # Retrieve the meeting document by its ID
-        meeting = mongo.db.find_one({'_id': ObjectId(id)})
+        # Assuming 'meetings' is the name of your MongoDB collection
+        meetings_collection = mongo.db.meetings
+        meeting = meetings_collection.find_one({'id_meet': id_meet})
 
         if meeting:
             return jsonify({
-                "id": str(meeting['_id']),
+                "id_meet": meeting['id_meet'],
                 "start_hour": meeting['start_hour'],
                 "end_hour": meeting['end_hour'],
                 "description": meeting['description'],
@@ -84,6 +88,7 @@ def get_meeting(id):
     except Exception as e:
         return jsonify({"error": str(e)}), 404
 
+
  
 @meeting_bp.route('/get_all_meetings', methods=['GET'])
 def get_all_meetings():
@@ -94,20 +99,20 @@ def get_all_meetings():
         # Find all documents in the 'meetings' collection
         meetings = meetings_collection.find()
 
-        # Convert the MongoDB cursor to a list for easier JSON serialization
-        meetings_list = list(meetings)
+        # Convert the MongoDB cursor to a list and serialize to JSON
+        meetings_list = json_util.dumps(list(meetings))
 
-        return jsonify({"meetings": meetings_list})
+        return meetings_list, 200, {'Content-Type': 'application/json'}
 
     except Exception as e:
-        return jsonify({"error": str(e)})
+        return jsonify({"error": str(e)}), 500
 
  
-@meeting_bp.route('/<string:id>', methods=['DELETE'])
-def delete_meeting(id):
+@meeting_bp.route('/<string:id_meet>', methods=['DELETE'])
+def delete_meeting(id_meet):
     try:
-        # Delete the meeting document from the MongoDB collection
-        result = mongo.db.delete_one({'_id': ObjectId(id)})
+        # Assuming 'meetings' is the name of your MongoDB collection
+        result = mongo.db.meetings.delete_one({'id_meet': id_meet})
 
         if result.deleted_count > 0:
             return jsonify({"message": "Meeting deleted successfully"}), 200
@@ -116,6 +121,7 @@ def delete_meeting(id):
 
     except Exception as e:
         return jsonify({"error": str(e)}), 400
+
 
 
 
