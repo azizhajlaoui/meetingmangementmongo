@@ -27,43 +27,50 @@ def create_meeting():
         return jsonify({'error': str(e)}), 400
 
  
-@meeting_bp.route('/<string:id>', methods=['PUT'])
-def update(id):
+@meeting_bp.route('/<string:id_meet>', methods=['PUT'])
+def update(id_meet):
     if request.method == 'PUT':
         try:
             # Get data from the request
-            meeting_data = request.get_json()
+            meeting_data = request.json  # Get data from the request JSON
+
+            # Assuming 'meetings' is the name of your MongoDB collection
             meetings_collection = mongo.db.meetings
-            # Extract data using correct syntax
-            mail = meeting_data.get('mail')
-            color = meeting_data.get('color')
-            title = meeting_data.get('title')
-            start_time = meeting_data.get('start_time')
-            end_time = meeting_data.get('end_time')
-            id_meet = meeting_data.get('id_meet')
-            description = meeting_data.get('description')
+            existing_meeting = meetings_collection.find_one({'id_meet': id_meet})
 
-            # Update the meeting document in the MongoDB collection
-            result = meetings_collection.update_one(
-                {'id_meet': id_meet},  # Use id_meet as the identifier
-                {'$set': {
-                    'start_hour': start_time,
-                    'end_hour': end_time,
-                    'description': description,
-                    'mail': mail,
-                    'title': title,
-                    'color': color,
-                    'id_meet': id_meet
-                }}
-            )
+            if existing_meeting:
+                # Extract data using correct syntax
+                mail = meeting_data.get('mail', existing_meeting['mail'])
+                color = meeting_data.get('color', existing_meeting['color'])
+                title = meeting_data.get('title', existing_meeting['title'])
+                start_time = meeting_data.get('start_time', existing_meeting['start_time'])
+                end_time = meeting_data.get('end_time', existing_meeting['end_time'])
+                description = meeting_data.get('description', existing_meeting['description'])
 
-            if result.modified_count > 0:
-                return jsonify({"message": "Meeting updated successfully"}), 200
+                # Update the meeting document in the MongoDB collection
+                result = meetings_collection.update_one(
+                    {'id_meet': id_meet},  # Use id_meet as the identifier
+                    {'$set': {
+                        'start_time': start_time,
+                        'end_time': end_time,
+                        'description': description,
+                        'mail': mail,
+                        'title': title,
+                        'color': color,
+                        'id_meet': id_meet
+                    }}
+                )
+
+                if result.modified_count > 0:
+                    return jsonify({"message": "Meeting updated successfully"}), 200
+                else:
+                    return jsonify({"error": "Meeting not found"}), 404
             else:
                 return jsonify({"error": "Meeting not found"}), 404
 
         except Exception as e:
             return jsonify({"error": str(e)}), 400
+
  
 @meeting_bp.route('/<string:id_meet>', methods=['GET'])
 def get_meeting(id_meet):
@@ -75,8 +82,8 @@ def get_meeting(id_meet):
         if meeting:
             return jsonify({
                 "id_meet": meeting['id_meet'],
-                "start_hour": meeting['start_hour'],
-                "end_hour": meeting['end_hour'],
+                "start_time": meeting['start_time'],
+                "end_time": meeting['end_time'],
                 "description": meeting['description'],
                 "mail": meeting['mail'],
                 "title": meeting['title'],
