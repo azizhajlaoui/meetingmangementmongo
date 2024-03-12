@@ -13,3 +13,4 @@ SQLAlchemy==1.3.24
 typing-extensions==3.10.0.2
 flask_pymongo
 pytest
+requests
