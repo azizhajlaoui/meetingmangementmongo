@@ -19,10 +19,10 @@ def test_create_meeting():
     assert response.json()['message'] == 'Meeting created successfully'
 
 def test_get_meeting():
-    response = requests.get(f"{BASE_URL}/3")
+    response = requests.get(f"{BASE_URL}/10")
     assert response.status_code == 200
     data = response.json()
-    assert data["id_meet"] == "3"
+    assert data["id_meet"] == "10"
 
 def test_get_all_meetings():
     response = requests.get(f"{BASE_URL}/get_all_meetings")
@@ -33,14 +33,14 @@ def test_get_all_meetings():
 def test_update_meeting():
     data = {
         "mail": "updated-test@example.com",
-        "color": "blue",
-        "title": "Updated Test Meeting",
+        "color": "aaa0aaa",
+        "title": "Updated Meeting..",
         "start_time": "2024-03-08T14:00:00",
         "end_time": "2024-03-08T15:00:00",
-        "description": "This is an updated test meeting"
+        "description": "This is updated test meeting"
     }
 
-    response = requests.put(f"{BASE_URL}/3", json=data)
+    response = requests.put(f"{BASE_URL}/10", json=data)
     assert response.status_code == 200
     assert response.json()['message'] == 'Meeting updated successfully'
 

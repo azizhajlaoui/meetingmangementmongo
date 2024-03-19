@@ -100,13 +100,10 @@ def get_meeting(id_meet):
 @meeting_bp.route('/get_all_meetings', methods=['GET'])
 def get_all_meetings():
     try:
-        # Assuming you have a 'meetings' collection in your MongoDB
         meetings_collection = mongo.db.meetings
 
-        # Find all documents in the 'meetings' collection
         meetings = meetings_collection.find()
 
-        # Convert the MongoDB cursor to a list and serialize to JSON
         meetings_list = json_util.dumps(list(meetings))
 
         return meetings_list, 200, {'Content-Type': 'application/json'}
@@ -127,11 +124,4 @@ def delete_meeting(id_meet):
             return jsonify({"error": "Meeting not found"}), 404
 
     except Exception as e:
-        return jsonify({"error": str(e)}), 400
-
-
-
-
-
-
-    
+        return jsonify({"error": str(e)}), 400    
